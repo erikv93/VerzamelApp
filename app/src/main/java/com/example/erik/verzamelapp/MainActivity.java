@@ -1,5 +1,9 @@
 package com.example.erik.verzamelapp;
 
+import android.content.ClipData;
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -9,10 +13,23 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
+import com.example.erik.verzamelapp.helpers.CollectionDBContract.ItemEntry;
+
+import com.example.erik.verzamelapp.helpers.CollectionDatabaseHelper;
+import com.example.erik.verzamelapp.helpers.CustomCursorAdapter;
 
 public class MainActivity extends AppCompatActivity {
 
-    @Override
+    CollectionDatabaseHelper cDbHelper = new CollectionDatabaseHelper(this);
+
+    String[] projection = {
+            ItemEntry._ID,
+            ItemEntry.COLUMN_NAME_NAME,
+            ItemEntry.COLUMN_NAME_DESCRIPTION,
+    };
+
+    String sortOrder = ItemEntry.COLUMN_NAME_NAME + " DESC";
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -28,7 +45,29 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        SQLiteDatabase db = cDbHelper.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(ItemEntry.COLUMN_NAME_NAME, "test");
+        values.put(ItemEntry.COLUMN_NAME_DESCRIPTION, "testdesc");
+
+        db.insert(ItemEntry.TABLE_NAME, null, values);
+
+        Cursor c = db.query(
+                ItemEntry.TABLE_NAME,
+                projection,
+                null,
+                null,
+                null,
+                null,
+                sortOrder
+        );
+
+        CustomCursorAdapter customCursorAdapter = new CustomCursorAdapter(this, c, 0);
+
         final ListView listView = (ListView)findViewById(R.id.listView);
+
+        listView.setAdapter(customCursorAdapter);
     }
 
     @Override
