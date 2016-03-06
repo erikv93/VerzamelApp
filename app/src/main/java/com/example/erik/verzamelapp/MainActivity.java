@@ -1,36 +1,45 @@
 package com.example.erik.verzamelapp;
 
+import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ContentValues;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.LoaderManager;
+import android.app.LoaderManager.LoaderCallbacks;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
+import android.widget.CursorAdapter;
 import android.widget.ListView;
 import com.example.erik.verzamelapp.helpers.CollectionDBContract.ItemEntry;
 
 import com.example.erik.verzamelapp.helpers.CollectionDatabaseHelper;
 import com.example.erik.verzamelapp.helpers.CustomCursorAdapter;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity{
 
     CollectionDatabaseHelper cDbHelper = new CollectionDatabaseHelper(this);
+    SQLiteDatabase db;
+    CustomCursorAdapter customCursorAdapter;
 
     String[] projection = {
             ItemEntry._ID,
             ItemEntry.COLUMN_NAME_NAME,
             ItemEntry.COLUMN_NAME_DESCRIPTION,
     };
-
     String sortOrder = ItemEntry.COLUMN_NAME_NAME + " DESC";
+    Cursor c;
 
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -40,20 +49,15 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Intent intent = new Intent(view.getContext(), AddItemActivity.class);
+                startActivity(intent);
             }
         });
 
-        SQLiteDatabase db = cDbHelper.getWritableDatabase();
 
-        ContentValues values = new ContentValues();
-        values.put(ItemEntry.COLUMN_NAME_NAME, "test");
-        values.put(ItemEntry.COLUMN_NAME_DESCRIPTION, "testdesc");
+        db = cDbHelper.getWritableDatabase();
 
-        db.insert(ItemEntry.TABLE_NAME, null, values);
-
-        Cursor c = db.query(
+        c  = db.query(
                 ItemEntry.TABLE_NAME,
                 projection,
                 null,
@@ -63,11 +67,57 @@ public class MainActivity extends AppCompatActivity {
                 sortOrder
         );
 
-        CustomCursorAdapter customCursorAdapter = new CustomCursorAdapter(this, c, 0);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Do you want to delete this item?");
+        builder.setNegativeButton("No",new DialogInterface.OnClickListener(){
+@Override
+public void onClick(DialogInterface dialog,int which) {
+
+            }
+        });
+
+        customCursorAdapter = new CustomCursorAdapter(this, c, 0);
 
         final ListView listView = (ListView)findViewById(R.id.listView);
 
         listView.setAdapter(customCursorAdapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, final long id) {
+                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String selection = ItemEntry._ID + " LIKE ?";
+                        db.delete(ItemEntry.TABLE_NAME, selection, new String[]{Long.toString(id)});
+                        refreshListView();
+                   }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
+        });
+    }
+
+    public void refreshListView(){
+       Cursor newCursor  = db.query(
+                ItemEntry.TABLE_NAME,
+                projection,
+                null,
+                null,
+                null,
+                null,
+                sortOrder
+        );
+
+        customCursorAdapter.swapCursor(newCursor);
+        customCursorAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        refreshListView();
     }
 
     @Override
