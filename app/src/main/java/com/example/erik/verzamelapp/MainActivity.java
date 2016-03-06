@@ -54,6 +54,11 @@ public class MainActivity extends AppCompatActivity{
             }
         });
 
+        Intent addItemIntent = getIntent();;
+        if (addItemIntent.getStringExtra("ITEM_NAME") != null) {
+            String snackbarString = "Added \'" + addItemIntent.getStringExtra("ITEM_NAME") + "\'";
+            showSnackbar(snackbarString);
+        }
 
         db = cDbHelper.getWritableDatabase();
 
@@ -70,11 +75,11 @@ public class MainActivity extends AppCompatActivity{
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("Do you want to delete this item?");
         builder.setNegativeButton("No",new DialogInterface.OnClickListener(){
-@Override
-public void onClick(DialogInterface dialog,int which) {
-
+            @Override
+            public void onClick(DialogInterface dialog,int which) {
             }
         });
+
 
         customCursorAdapter = new CustomCursorAdapter(this, c, 0);
 
@@ -82,21 +87,35 @@ public void onClick(DialogInterface dialog,int which) {
 
         listView.setAdapter(customCursorAdapter);
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, final long id) {
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                final Long _id = id;
                 builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         String selection = ItemEntry._ID + " LIKE ?";
-                        db.delete(ItemEntry.TABLE_NAME, selection, new String[]{Long.toString(id)});
+                        db.delete(ItemEntry.TABLE_NAME, selection, new String[]{Long.toString(_id)});
                         refreshListView();
-                   }
+                    }
+                });
+                builder.setNeutralButton("edit", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent(getApplicationContext(), AddItemActivity.class);
+                        intent.putExtra("ITEM_ID", _id);
+                        startActivity(intent);
+                    }
                 });
                 AlertDialog dialog = builder.create();
                 dialog.show();
+                return false;
             }
         });
+    }
+
+    public void showSnackbar(String string){
+        Snackbar.make(findViewById(R.id.coordinaterlayout), string, Snackbar.LENGTH_LONG).show();
     }
 
     public void refreshListView(){
@@ -109,7 +128,6 @@ public void onClick(DialogInterface dialog,int which) {
                 null,
                 sortOrder
         );
-
         customCursorAdapter.swapCursor(newCursor);
         customCursorAdapter.notifyDataSetChanged();
     }

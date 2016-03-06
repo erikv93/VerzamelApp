@@ -35,6 +35,10 @@ public class CustomCursorAdapter extends CursorAdapter {
         TextView description = (TextView) view.findViewById(R.id.itemRowDescription);
 
         name.setText(cursor.getString(cursor.getColumnIndexOrThrow(ItemEntry.COLUMN_NAME_NAME)));
-        description.setText(cursor.getString(cursor.getColumnIndexOrThrow(ItemEntry.COLUMN_NAME_DESCRIPTION)));
+        String descriptionString = cursor.getString(cursor.getColumnIndexOrThrow(ItemEntry.COLUMN_NAME_DESCRIPTION));
+        if (descriptionString.length() > 60) {
+            descriptionString = descriptionString.substring(0,57) + "...";
+        }
+        description.setText(descriptionString);
     }
 }
