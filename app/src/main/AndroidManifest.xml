@@ -20,7 +20,10 @@
         </activity>
         <activity
             android:name=".AddItemActivity"
-            android:parentActivityName="com.example.erik.verzamelapp.MainActivity" >>
+            android:parentActivityName=".MainActivity" >
+>
+        </activity>
+        <activity android:name=".ViewItemActivity" >
         </activity>
     </application>
 

@@ -87,6 +87,15 @@ public class MainActivity extends AppCompatActivity{
 
         listView.setAdapter(customCursorAdapter);
 
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent(getApplicationContext(), ViewItemActivity.class);
+                intent.putExtra("ITEM_ID", id);
+                startActivity(intent);
+            }
+        });
+
         listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
@@ -109,7 +118,7 @@ public class MainActivity extends AppCompatActivity{
                 });
                 AlertDialog dialog = builder.create();
                 dialog.show();
-                return false;
+                return true;
             }
         });
     }

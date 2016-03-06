@@ -17,7 +17,6 @@ import com.example.erik.verzamelapp.helpers.CollectionDatabaseHelper;
 public class AddItemActivity extends AppCompatActivity {
 
     CollectionDatabaseHelper cDbHelper = new CollectionDatabaseHelper(this);
-
     EditText nameEditText;
     EditText descriptionEditText;
     SQLiteDatabase db;
