@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity{
             }
         });
 
-        Intent addItemIntent = getIntent();;
+        Intent addItemIntent = getIntent();
         if (addItemIntent.getStringExtra("ITEM_NAME") != null) {
             String snackbarString = "Added \'" + addItemIntent.getStringExtra("ITEM_NAME") + "\'";
             showSnackbar(snackbarString);
